@@ -27,7 +27,6 @@ agg_date <-aggregate(steps ~ date, data=activity, sum)
 
 #Histogram of Number of Steps Taken per Day
 hist(agg_date$steps, 
-     freq=TRUE,
      col="blue", 
      xlab="Number of Steps Taken per Day",
      ylab="Frequency",
@@ -65,7 +64,7 @@ Examine the average daily activity pattern by looking at a line graph.
 
 ```r
 #Create dataset with average steps by interval
-agg_int <- aggregate(steps ~ interval, data=raw, mean)
+agg_int <- aggregate(steps ~ interval, data=activity, mean)
 
 #Line graph of average steps by interval
 plot(agg_int$interval, agg_int$steps, type="l",
@@ -86,7 +85,7 @@ agg_int[round(agg_int$steps,4)==round(max(agg_int$steps),4), ]
 ##     interval    steps
 ## 104      835 206.1698
 ```
-The interval (based on the average across all the days in the dataset) that contains the maximum number of steps is 835, at 206.17 steps.
+The interval (based on the average across all the days in the dataset) that contains the maximum number of steps is 835 seconds, at 206.17 steps.
 
 ###Imputing missing values
 
@@ -121,7 +120,6 @@ agg_full <- aggregate(steps ~ date, data=full, sum)
 
 #Histogram of total steps by date
 hist(agg_full$steps, 
-     freq=TRUE,
      col="blue", 
      xlab="Number of Steps Taken per Day",
      ylab="Frequency",
@@ -152,35 +150,33 @@ median(agg_full$steps)
 ```
 
 The mean of the total number of steps taken per day is 1.0766189 &times; 10<sup>4</sup>.
+
 The median of the total number of steps taken per day is 1.0766189 &times; 10<sup>4</sup>.
 
-Thee mean and median from the imputed data set are similar to the dataset excluding missing values.  There is no impact to imputing missing data for this dataset.
+The mean and median from the imputed data set are similar to the dataset excluding missing values.  There is no impact to imputing missing data for this dataset.
 
 ###Are there differences in activity patterns between weekdays and weekends?
 Determine if there differences by interval for weekends vs. weekdays:
 
 ```r
-#Create dataset with average steps by interval for weekends
+#Create variable for day of the week
 full$weekday <- as.factor(weekdays(full$date))
-agg_weekend <- aggregate(steps ~ interval, data=subset(full, weekday=="Saturday" | weekday=="Sunday"), mean)
 
-#Create dataset with average steps by interval for weekdays
-agg_weekday <- aggregate(steps ~ interval, data=subset(full, weekday!="Saturday" & weekday!="Sunday"), mean)
+#Create variable to flag if day of the week is on a Weekend or a Weekday
+full$day_type <- ifelse((full$weekday=="Saturday" | full$weekday=="Sunday"),  "Weekend","Weekday")
 ```
 
 Create panel plot of line graphs for weekend versus weekday average steps by interval:
 
 ```r
-par(mfrow=c(2,1))
+agg_full <- aggregate(steps ~ interval+day_type, data=full, mean)
 
-plot(agg_weekend$interval, agg_weekend$steps, type="l",
-     xlab="Interval",
-     ylab="Average Number of Steps",
-     main="Weekend")
-plot(agg_weekday$interval, agg_weekday$steps, type="l",
-     xlab="Interval",
-     ylab="Average Number of Steps",
-     main="Weekday")
+library(lattice)
+xyplot(agg_full$steps ~ agg_full$interval | agg_full$day_type,
+       type="l",
+       layout=c(1,2),
+       xlab="Interval",
+       ylab="Number of Steps")
 ```
 
 ![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-1.png) 
